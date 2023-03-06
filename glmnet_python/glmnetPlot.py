@@ -209,7 +209,7 @@ def plotCoef(beta, norm, lambdau, df, dev, label, xvar, xlab, ylab, **options):
     prettydf = df[indat]
     prettydf[-1] = df[-1]        
     
-    ax2.set(XLim=[min(index), max(index)], XTicks = atdf, XTickLabels = prettydf)
+    ax2.set(xlim=[min(index), max(index)], xticks = atdf, xticklabels = prettydf)
     ax2.grid()
     ax1.yaxis.grid()
 

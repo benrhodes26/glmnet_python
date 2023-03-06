@@ -110,7 +110,7 @@ def cvglmnetPlot(cvobject, sign_lambda = 1.0, **options):
 
     prettydf = cvobject['nzero'][indat]
     
-    ax2.set(XLim=xlim1, XTicks = atdf, XTickLabels = prettydf)
+    ax2.set(xlim=xlim1, xticks = atdf, xticklabels = prettydf)
     ax2.grid()
     ax1.yaxis.grid()
     

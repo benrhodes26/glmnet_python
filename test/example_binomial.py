@@ -1,5 +1,6 @@
 # Import relevant modules and setup for calling glmnet
 
+import os
 import sys
 sys.path.append('../test')
 sys.path.append('../lib')
@@ -8,7 +9,7 @@ import scipy
 import importlib
 import matplotlib.pyplot as plt
 
-import glmnet 
+import glmnet_python as glmnet
 import glmnetPlot
 import glmnetPrint
 import glmnetCoef
@@ -30,12 +31,13 @@ importlib.reload(cvglmnetCoef)
 importlib.reload(cvglmnetPlot)
 importlib.reload(cvglmnetPredict)
 
-# parameters
-baseDataDir= '../data/'
+# get the parent directory of current directory
+par = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+baseDataDir = os.path.join(par, 'data')
 
 # load data
-x = scipy.loadtxt(baseDataDir + 'BinomialExampleX.dat', dtype = scipy.float64, delimiter = ',')
-y = scipy.loadtxt(baseDataDir + 'BinomialExampleY.dat', dtype = scipy.float64)
+x = scipy.loadtxt(os.path.join(baseDataDir, 'BinomialExampleX.dat'), dtype = scipy.float64, delimiter = ',')
+y = scipy.loadtxt(os.path.join(baseDataDir, 'BinomialExampleY.dat'), dtype = scipy.float64)
 
 # call glmnet
 fit = glmnet.glmnet(x = x.copy(), y = y.copy(), family = 'binomial')
@@ -57,8 +59,9 @@ cvglmnetCoef.cvglmnetCoef(cvfit, s = 'lambda_min')
 
 cvglmnetPredict.cvglmnetPredict(cvfit, newx = x[0:10, ], s = 'lambda_min', ptype = 'class')
 
-
-
-
-
-
+fig, ax = plt.subplots(1,1)
+ax.plot(cvfit['trn_cvm'], label='trn')
+ax.plot(cvfit['cvm'], label='val')
+fig.legend()
+fig.show()
+fig.savefig(os.path.join(baseDataDir, "tst_cvplot"))

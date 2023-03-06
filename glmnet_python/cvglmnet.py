@@ -335,6 +335,10 @@ def cvglmnet(*, x,
     semin = cvm[idmin] + cvsd[idmin]
     CVerr['lambda_1se'] = numpy.amax(options['lambdau'][cvm <= semin]).reshape([1])
     CVerr['class'] = 'cvglmnet'
+
+    if 'trn_cvm' in cvstuff:
+        CVerr['trn_cvm'] = cvstuff['trn_cvm']
+        CVerr['trn_cvsd'] = cvstuff['trn_cvsd']
     
     return(CVerr)
         

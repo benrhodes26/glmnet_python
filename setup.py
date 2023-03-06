@@ -36,7 +36,11 @@ class GfortranBuild(build_ext):
 
         extdir = os.path.join(os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name))),
                                               os.path.basename(ext.sourcedir))
-        subprocess.check_call(['install', ext.output, extdir], cwd=self.build_temp, env=env)
+        try:
+            subprocess.check_call(['install', ext.output, extdir], cwd=self.build_temp, env=env)
+        except subprocess.SubprocessError as e:
+            print("Error installing extension: " + ext.name)
+            
 
 setup(name='glmnet_python',
       version = '1.0.2',
