@@ -109,6 +109,8 @@ def make_predictions(fit, lambdau, x, y, weights, offset, foldid, ptype,
             off_sub = scipy.empty([0])
 
         preds = glmnetPredict(fitobj, x[which, ], scipy.empty([0]), 'response', False, off_sub)
+        if scipy.sparse.issparse(preds):
+            preds = preds.toarray()
         yi = y[which, :]
 
         if ptype == 'auc':

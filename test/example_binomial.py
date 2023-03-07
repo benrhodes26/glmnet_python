@@ -52,7 +52,6 @@ plt.figure()
 cvglmnetPlot.cvglmnetPlot(cvfit)
 
 cvfit['lambda_min']
-
 cvfit['lambda_1se']
 
 cvglmnetCoef.cvglmnetCoef(cvfit, s = 'lambda_min')
