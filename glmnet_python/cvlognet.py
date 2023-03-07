@@ -3,6 +3,7 @@
 Internal function called by cvglmnet. See also cvglmnet
 
 """
+import numpy as np
 import scipy
 from glmnetPredict import glmnetPredict
 from wtmean import wtmean
@@ -109,8 +110,7 @@ def make_predictions(fit, lambdau, x, y, weights, offset, foldid, ptype,
             off_sub = scipy.empty([0])
 
         preds = glmnetPredict(fitobj, x[which, ], scipy.empty([0]), 'response', False, off_sub)
-        if scipy.sparse.issparse(preds):
-            preds = preds.toarray()
+        preds = np.asarray(preds)
         yi = y[which, :]
 
         if ptype == 'auc':
