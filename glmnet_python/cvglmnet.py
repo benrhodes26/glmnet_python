@@ -317,9 +317,15 @@ def cvglmnet(*, x,
     cvname = cvstuff['name']
 
     CVerr = dict()
+    for name in ["", "_class", "_mse", "_rsquared"]:
+        if 'cvm' + name in cvstuff:
+            CVerr['cvm' + name] = numpy.transpose(cvstuff['cvm' + name])
+            CVerr['cvsd' + name] = numpy.transpose(cvstuff['cvsd' + name])
+        if 'trn_cvm' + name in cvstuff:
+            CVerr['trn_cvm' + name] = numpy.transpose(cvstuff['trn_cvm' + name])
+            CVerr['trn_cvsd' + name] = numpy.transpose(cvstuff['trn_cvsd' + name])
+
     CVerr['lambdau'] = options['lambdau']       
-    CVerr['cvm'] = numpy.transpose(cvm)
-    CVerr['cvsd'] = numpy.transpose(cvsd)
     CVerr['cvup'] = numpy.transpose(cvm + cvsd)
     CVerr['cvlo'] = numpy.transpose(cvm - cvsd)
     CVerr['nzero'] = nz
@@ -335,10 +341,6 @@ def cvglmnet(*, x,
     semin = cvm[idmin] + cvsd[idmin]
     CVerr['lambda_1se'] = numpy.amax(options['lambdau'][cvm <= semin]).reshape([1])
     CVerr['class'] = 'cvglmnet'
-
-    if 'trn_cvm' in cvstuff:
-        CVerr['trn_cvm'] = cvstuff['trn_cvm']
-        CVerr['trn_cvsd'] = cvstuff['trn_cvsd']
     
     return(CVerr)
         

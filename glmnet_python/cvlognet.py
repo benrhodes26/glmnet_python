@@ -19,12 +19,13 @@ def cvlognet(fit, \
             grouped, \
             keep = False):
     
-    typenames = {'deviance':'Binomial Deviance', 'mse':'Mean-Squared Error', 
-                 'mae':'Mean Absolute Error', 'auc':'AUC', 'class':'Misclassification Error'}
+    typenames = {'deviance':'Binomial Deviance', 'mse':'Mean-Squared Error',
+                 'rsquared': 'R-squared', 'mae':'Mean Absolute Error', 
+                 'auc':'AUC', 'class':'Misclassification Error'}
     if ptype == 'default':
         ptype = 'deviance'
         
-    ptypeList = ['mse', 'mae', 'deviance', 'auc', 'class']    
+    ptypeList = ['mse', 'mae', 'deviance', 'auc', 'class', 'rsquared']    
     if not ptype in ptypeList:
         print('Warning: only ', ptypeList, 'available for binomial models; ''deviance'' used')
         ptype = 'deviance'
@@ -53,16 +54,19 @@ def cvlognet(fit, \
         grouped = False
 
     result = dict()
-    _, cvm, cvsd = make_predictions(fit, lambdau, x, y, weights, offset, foldid, ptype, 
-                                    grouped, prob_min, prob_max, val_mode=False)
-    result['trn_cvm'] = cvm
-    result['trn_cvsd'] = cvsd
-
-    predmat, cvm, cvsd = make_predictions(fit, lambdau, x, y, weights, offset, foldid, ptype, 
-                                          grouped, prob_min, prob_max)
-    result['cvm'] = cvm
-    result['cvsd'] = cvsd
     result['name'] = typenames[ptype]
+
+    for i, measure in enumerate([ptype, 'class', 'mse', 'rsquared']):
+        name = '' if i == 0 else f'_{measure}'
+        _, cvm, cvsd = make_predictions(fit, lambdau, x, y, weights, offset, foldid, measure, 
+                                        grouped, prob_min, prob_max, val_mode=False)
+        result['trn_cvm' + name] = cvm
+        result['trn_cvsd' + name] = cvsd
+
+        predmat, cvm, cvsd = make_predictions(fit, lambdau, x, y, weights, offset, foldid, measure, 
+                                            grouped, prob_min, prob_max)
+        result['cvm' + name] = cvm
+        result['cvsd' + name] = cvsd
 
     if keep:
         result['fit_preval'] = predmat
@@ -74,7 +78,7 @@ def make_predictions(fit, lambdau, x, y, weights, offset, foldid, ptype,
     
     nfolds = scipy.amax(foldid) + 1
     assert grouped, "'grouped' must be true"
-    assert y.size/nfolds >= 3, "not enough samples per fold"
+    assert y.size/nfolds >= 3, f"{y.size/nfolds} is not enough samples per fold. Need at least 3."
     if val_mode:
         predmat = scipy.ones([y.shape[0], lambdau.size])*scipy.NAN
     else:
@@ -117,7 +121,11 @@ def make_predictions(fit, lambdau, x, y, weights, offset, foldid, ptype,
             yy2 = scipy.tile(yi[:,1:2], [1, lambdau.size])
 
         if ptype == 'mse':
-            cvraw[i] = wtmean((yy1 - (1 - preds))**2 + (yy2 - (1 - preds))**2, wi)
+            cvraw[i] = wtmean((yy2 - preds)**2, wi)
+        elif ptype == 'rsquared':
+            sserr = wtmean((yy2 - preds)**2, wi)
+            sstot = wtmean((yy2 - scipy.mean(yy2, axis=0, keepdims=True))**2, wi)
+            cvraw[i] = 1 - (sserr/sstot)
         elif ptype == 'deviance':
             preds = scipy.minimum(scipy.maximum(preds, prob_min), prob_max)
             lp = yy1*scipy.log(1-preds) + yy2*scipy.log(preds)
